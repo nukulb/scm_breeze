@@ -169,12 +169,13 @@ function _git_index_count() {
   echo $(sed -e "s/--.*//" "$GIT_REPO_DIR/.git_index" | \grep . | wc -l)
 }
 
-# Returns the current $GIT_BINARY branch (returns nothing if not a git repository)
+# Returns * if the git repo is dirty, returns nothing if it has no pending changes.
 function is_git_dirty {
-    [[ $($GIT_BINARY status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
- }
+    [[ $($GIT_BINARY status 2> /dev/null | tail -n1) != "nothing to commit, working directory clean" ]] && echo "*"
+}
+# Returns the current $GIT_BINARY branch (returns nothing if not a git repository)
 function parse_git_branch {
-    $GIT_BINARY branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/"
+    $GIT_BINARY branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/[\1$(is_git_dirty)]/"
 }
 
 # If the working directory is clean, update the git repository. Otherwise, show changes.
